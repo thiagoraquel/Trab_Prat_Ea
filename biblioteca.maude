@@ -1,0 +1,18 @@
+fmod BIBLIOTECA is
+  protecting NAT .      --- Importa números naturais para contagens/IDs
+  protecting STRING .   --- Importa strings para nomes e títulos
+
+  --- 1. Definição dos Sorts (Tipos do Nosso Sistema)
+  sorts Livro Usuario EstadoLivro .
+
+  --- 2. Estados possíveis de um livro
+  ops disponivel emprestado : -> EstadoLivro [ctor] .
+
+  --- 3. Construtores para Livro e Usuario
+  --- Um Livro é formado por: id (Nat), título (String) e estado (EstadoLivro)
+  op livro : Nat String EstadoLivro -> Livro [ctor] .
+  
+  --- Um Usuario é formado por: id (Nat) e nome (String)
+  op usuario : Nat String -> Usuario [ctor] .
+
+endfm
