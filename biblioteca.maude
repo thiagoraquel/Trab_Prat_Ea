@@ -1,18 +1,39 @@
 fmod BIBLIOTECA is
-  protecting NAT .      --- Importa números naturais para contagens/IDs
-  protecting STRING .   --- Importa strings para nomes e títulos
+  protecting NAT .
+  protecting STRING .
 
-  --- 1. Definição dos Sorts (Tipos do Nosso Sistema)
+  --- 1. Sorts Básicos
   sorts Livro Usuario EstadoLivro .
 
-  --- 2. Estados possíveis de um livro
-  ops disponivel emprestado : -> EstadoLivro [ctor] .
+  --- 2. Sorts de Coleções e Estado do Sistema
+  sorts ConjuntoLivros ConjuntoUsuarios Emprestimo ConjuntoEmprestimos Sistema .
 
-  --- 3. Construtores para Livro e Usuario
-  --- Um Livro é formado por: id (Nat), título (String) e estado (EstadoLivro)
+  --- 3. Construtores de Estados e Entidades Básicas
+  ops disponivel emprestado : -> EstadoLivro [ctor] .
   op livro : Nat String EstadoLivro -> Livro [ctor] .
-  
-  --- Um Usuario é formado por: id (Nat) e nome (String)
   op usuario : Nat String -> Usuario [ctor] .
+
+  --- 4. Construtores de Coleções (Conjuntos)
+  --- Elementos vazios
+  op nenhumLivro : -> ConjuntoLivros [ctor] .
+  op nenhumUsuario : -> ConjuntoUsuarios [ctor] .
+  op nenhumEmprestimo : -> ConjuntoEmprestimos [ctor] .
+
+  --- Subsorts: um Livro individual também é um ConjuntoLivros de tamanho 1, etc.
+  subsort Livro < ConjuntoLivros .
+  subsort Usuario < ConjuntoUsuarios .
+  subsort Emprestimo < ConjuntoEmprestimos .
+
+  --- União de conjuntos (usando espaço como operador transparente)
+  op __ : ConjuntoLivros ConjuntoLivros -> ConjuntoLivros [ctor assoc comm id: nenhumLivro] .
+  op __ : ConjuntoUsuarios ConjuntoUsuarios -> ConjuntoUsuarios [ctor assoc comm id: nenhumUsuario] .
+  op __ : ConjuntoEmprestimos ConjuntoEmprestimos -> ConjuntoEmprestimos [ctor assoc comm id: nenhumEmprestimo] .
+
+  --- 5. Construtor de Empréstimo (Relaciona ID do Livro com ID do Usuário)
+  op emprestimo : Nat Nat -> Emprestimo [ctor] .
+
+  --- 6. Construtor da Estrutura Global do Sistema
+  --- sistema(Acervo, Usuarios, Emprestimos)
+  op sistema : ConjuntoLivros ConjuntoUsuarios ConjuntoEmprestimos -> Sistema [ctor] .
 
 endfm
