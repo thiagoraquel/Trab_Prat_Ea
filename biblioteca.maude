@@ -2,38 +2,66 @@ fmod BIBLIOTECA is
   protecting NAT .
   protecting STRING .
 
-  --- 1. Sorts Básicos
+  --- 1. Sorts
   sorts Livro Usuario EstadoLivro .
-
-  --- 2. Sorts de Coleções e Estado do Sistema
   sorts ConjuntoLivros ConjuntoUsuarios Emprestimo ConjuntoEmprestimos Sistema .
 
-  --- 3. Construtores de Estados e Entidades Básicas
+  --- 2. Construtores Básicos
   ops disponivel emprestado : -> EstadoLivro [ctor] .
   op livro : Nat String EstadoLivro -> Livro [ctor] .
   op usuario : Nat String -> Usuario [ctor] .
 
-  --- 4. Construtores de Coleções (Conjuntos)
-  --- Elementos vazios
+  --- 3. Construtores de Coleções
   op nenhumLivro : -> ConjuntoLivros [ctor] .
   op nenhumUsuario : -> ConjuntoUsuarios [ctor] .
   op nenhumEmprestimo : -> ConjuntoEmprestimos [ctor] .
 
-  --- Subsorts: um Livro individual também é um ConjuntoLivros de tamanho 1, etc.
   subsort Livro < ConjuntoLivros .
   subsort Usuario < ConjuntoUsuarios .
   subsort Emprestimo < ConjuntoEmprestimos .
 
-  --- União de conjuntos (usando espaço como operador transparente)
   op __ : ConjuntoLivros ConjuntoLivros -> ConjuntoLivros [ctor assoc comm id: nenhumLivro] .
   op __ : ConjuntoUsuarios ConjuntoUsuarios -> ConjuntoUsuarios [ctor assoc comm id: nenhumUsuario] .
   op __ : ConjuntoEmprestimos ConjuntoEmprestimos -> ConjuntoEmprestimos [ctor assoc comm id: nenhumEmprestimo] .
 
-  --- 5. Construtor de Empréstimo (Relaciona ID do Livro com ID do Usuário)
   op emprestimo : Nat Nat -> Emprestimo [ctor] .
-
-  --- 6. Construtor da Estrutura Global do Sistema
-  --- sistema(Acervo, Usuarios, Emprestimos)
   op sistema : ConjuntoLivros ConjuntoUsuarios ConjuntoEmprestimos -> Sistema [ctor] .
+
+  --- 4. Declaracao de Operadores Definidos (Acoes do Sistema)
+  op addLivro : Sistema Nat String -> Sistema .
+  op addUsuario : Sistema Nat String -> Sistema .
+  op emprestar : Sistema Nat Nat -> Sistema .    --- sistema, idLivro, idUsuario
+  op devolver : Sistema Nat Nat -> Sistema .     --- sistema, idLivro, idUsuario
+  op removerLivro : Sistema Nat -> Sistema .
+
+  --- 5. Declaracao de Variaveis
+  vars L U : Nat .
+  var T : String .
+  var E : EstadoLivro .
+  var CL : ConjuntoLivros .
+  var CU : ConjuntoUsuarios .
+  var CE : ConjuntoEmprestimos .
+
+  --- 6. Equacoes (Regras do Sistema)
+
+  --- Adicionar livro (entra como disponivel)
+  eq addLivro(sistema(CL, CU, CE), L, T) = sistema(livro(L, T, disponivel) CL, CU, CE) .
+
+  --- Adicionar usuario
+  eq addUsuario(sistema(CL, CU, CE), U, T) = sistema(CL, usuario(U, T) CU, CE) .
+
+  --- Realizar emprestimo:
+  --- Muda estado do livro de disponivel para emprestado e cria o registro de emprestimo
+  eq emprestar(sistema(livro(L, T, disponivel) CL, usuario(U, T2:String) CU, CE), L, U) 
+   = sistema(livro(L, T, emprestado) CL, usuario(U, T2:String) CU, emprestimo(L, U) CE) .
+
+  --- Realizar devolucao:
+  --- Muda estado do livro de emprestado para disponivel e remove o registro de emprestimo
+  eq devolver(sistema(livro(L, T, emprestado) CL, CU, emprestimo(L, U) CE), L, U) 
+   = sistema(livro(L, T, disponivel) CL, CU, CE) .
+
+  --- Remover livro (so remove se estiver disponivel)
+  eq removerLivro(sistema(livro(L, T, disponivel) CL, CU, CE), L) 
+   = sistema(CL, CU, CE) .
 
 endfm
