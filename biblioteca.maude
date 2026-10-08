@@ -1,6 +1,7 @@
 fmod BIBLIOTECA is
   protecting NAT .
   protecting STRING .
+  protecting BOOL .
 
   --- 1. Sorts
   sorts Livro Usuario EstadoLivro .
@@ -43,6 +44,10 @@ fmod BIBLIOTECA is
   op contarEmprestimos : ConjuntoEmprestimos -> Nat .
   op contarDisponiveis : ConjuntoLivros -> Nat .
 
+  op pertenceAcervo : ConjuntoLivros Nat -> Bool .
+  op estaDisponivel : ConjuntoLivros Nat -> Bool .
+  op estaEmprestado : ConjuntoEmprestimos Nat Nat -> Bool .
+
   --- 6. Variaveis
   vars L U ID : Nat .
   vars T T2 : String .
@@ -55,16 +60,28 @@ fmod BIBLIOTECA is
   eq addLivro(sistema(CL, CU, CE), L, T) = sistema(livro(L, T, disponivel) CL, CU, CE) .
   eq addUsuario(sistema(CL, CU, CE), U, T) = sistema(CL, usuario(U, T) CU, CE) .
 
+  --- Emprestimo valido
   eq emprestar(sistema(livro(L, T, disponivel) CL, usuario(U, T2) CU, CE), L, U) 
    = sistema(livro(L, T, emprestado) CL, usuario(U, T2) CU, emprestimo(L, U) CE) .
 
+  --- Devolucao valida
   eq devolver(sistema(livro(L, T, emprestado) CL, CU, emprestimo(L, U) CE), L, U) 
    = sistema(livro(L, T, disponivel) CL, CU, CE) .
 
+  --- Remocao valida (somente livro disponivel)
   eq removerLivro(sistema(livro(L, T, disponivel) CL, CU, CE), L) 
    = sistema(CL, CU, CE) .
 
-  --- 8. Equacoes das Consultas
+  --- 8. Equacoes de Checagem e Consultas
+  eq pertenceAcervo(nenhumLivro, L) = false .
+  eq pertenceAcervo(livro(L, T, E) CL, L) = true .
+
+  eq estaDisponivel(nenhumLivro, L) = false .
+  eq estaDisponivel(livro(L, T, disponivel) CL, L) = true .
+
+  eq estaEmprestado(nenhumEmprestimo, L, U) = false .
+  eq estaEmprestado(emprestimo(L, U) CE, L, U) = true .
+
   eq contarLivros(nenhumLivro) = 0 .
   eq contarLivros(livro(ID, T, E) CL) = 1 + contarLivros(CL) .
 
