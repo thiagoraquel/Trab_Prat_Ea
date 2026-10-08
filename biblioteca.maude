@@ -6,12 +6,12 @@ fmod BIBLIOTECA is
   sorts Livro Usuario EstadoLivro .
   sorts ConjuntoLivros ConjuntoUsuarios Emprestimo ConjuntoEmprestimos Sistema .
 
-  --- 2. Construtores Básicos
+  --- 2. Construtores Basicos
   ops disponivel emprestado : -> EstadoLivro [ctor] .
   op livro : Nat String EstadoLivro -> Livro [ctor] .
   op usuario : Nat String -> Usuario [ctor] .
 
-  --- 3. Construtores de Coleções
+  --- 3. Construtores de Colecoes
   op nenhumLivro : -> ConjuntoLivros [ctor] .
   op nenhumUsuario : -> ConjuntoUsuarios [ctor] .
   op nenhumEmprestimo : -> ConjuntoEmprestimos [ctor] .
@@ -27,41 +27,56 @@ fmod BIBLIOTECA is
   op emprestimo : Nat Nat -> Emprestimo [ctor] .
   op sistema : ConjuntoLivros ConjuntoUsuarios ConjuntoEmprestimos -> Sistema [ctor] .
 
-  --- 4. Declaracao de Operadores Definidos (Acoes do Sistema)
+  --- 4. Declaracao de Operadores Definidos (Acoes)
   op addLivro : Sistema Nat String -> Sistema .
   op addUsuario : Sistema Nat String -> Sistema .
-  op emprestar : Sistema Nat Nat -> Sistema .    --- sistema, idLivro, idUsuario
-  op devolver : Sistema Nat Nat -> Sistema .     --- sistema, idLivro, idUsuario
+  op emprestar : Sistema Nat Nat -> Sistema .
+  op devolver : Sistema Nat Nat -> Sistema .
   op removerLivro : Sistema Nat -> Sistema .
 
-  --- 5. Declaracao de Variaveis
-  vars L U : Nat .
-  var T : String .
+  --- 5. Declaracao de Operadores de Consulta e Contagem
+  op totalLivros : Sistema -> Nat .
+  op totalEmprestados : Sistema -> Nat .
+  op totalDisponiveis : Sistema -> Nat .
+
+  op contarLivros : ConjuntoLivros -> Nat .
+  op contarEmprestimos : ConjuntoEmprestimos -> Nat .
+  op contarDisponiveis : ConjuntoLivros -> Nat .
+
+  --- 6. Variaveis
+  vars L U ID : Nat .
+  vars T T2 : String .
   var E : EstadoLivro .
   var CL : ConjuntoLivros .
   var CU : ConjuntoUsuarios .
   var CE : ConjuntoEmprestimos .
 
-  --- 6. Equacoes (Regras do Sistema)
-
-  --- Adicionar livro (entra como disponivel)
+  --- 7. Equacoes das Acoes
   eq addLivro(sistema(CL, CU, CE), L, T) = sistema(livro(L, T, disponivel) CL, CU, CE) .
-
-  --- Adicionar usuario
   eq addUsuario(sistema(CL, CU, CE), U, T) = sistema(CL, usuario(U, T) CU, CE) .
 
-  --- Realizar emprestimo:
-  --- Muda estado do livro de disponivel para emprestado e cria o registro de emprestimo
-  eq emprestar(sistema(livro(L, T, disponivel) CL, usuario(U, T2:String) CU, CE), L, U) 
-   = sistema(livro(L, T, emprestado) CL, usuario(U, T2:String) CU, emprestimo(L, U) CE) .
+  eq emprestar(sistema(livro(L, T, disponivel) CL, usuario(U, T2) CU, CE), L, U) 
+   = sistema(livro(L, T, emprestado) CL, usuario(U, T2) CU, emprestimo(L, U) CE) .
 
-  --- Realizar devolucao:
-  --- Muda estado do livro de emprestado para disponivel e remove o registro de emprestimo
   eq devolver(sistema(livro(L, T, emprestado) CL, CU, emprestimo(L, U) CE), L, U) 
    = sistema(livro(L, T, disponivel) CL, CU, CE) .
 
-  --- Remover livro (so remove se estiver disponivel)
   eq removerLivro(sistema(livro(L, T, disponivel) CL, CU, CE), L) 
    = sistema(CL, CU, CE) .
+
+  --- 8. Equacoes das Consultas
+  eq contarLivros(nenhumLivro) = 0 .
+  eq contarLivros(livro(ID, T, E) CL) = 1 + contarLivros(CL) .
+
+  eq contarEmprestimos(nenhumEmprestimo) = 0 .
+  eq contarEmprestimos(emprestimo(L, U) CE) = 1 + contarEmprestimos(CE) .
+
+  eq contarDisponiveis(nenhumLivro) = 0 .
+  eq contarDisponiveis(livro(ID, T, disponivel) CL) = 1 + contarDisponiveis(CL) .
+  eq contarDisponiveis(livro(ID, T, emprestado) CL) = contarDisponiveis(CL) .
+
+  eq totalLivros(sistema(CL, CU, CE)) = contarLivros(CL) .
+  eq totalEmprestados(sistema(CL, CU, CE)) = contarEmprestimos(CE) .
+  eq totalDisponiveis(sistema(CL, CU, CE)) = contarDisponiveis(CL) .
 
 endfm
