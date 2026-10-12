@@ -35,7 +35,7 @@ fmod BIBLIOTECA is
   op devolver : Sistema Nat Nat -> Sistema .
   op removerLivro : Sistema Nat -> Sistema .
 
-  --- 5. Declaracao de Operadores de Consulta e Contagem
+  --- 5. Declaracao de Operadores de Consulta e Predicados
   op totalLivros : Sistema -> Nat .
   op totalEmprestados : Sistema -> Nat .
   op totalDisponiveis : Sistema -> Nat .
@@ -45,8 +45,10 @@ fmod BIBLIOTECA is
   op contarDisponiveis : ConjuntoLivros -> Nat .
 
   op pertenceAcervo : ConjuntoLivros Nat -> Bool .
+  op existeUsuario : ConjuntoUsuarios Nat -> Bool .
   op estaDisponivel : ConjuntoLivros Nat -> Bool .
   op estaEmprestado : ConjuntoEmprestimos Nat Nat -> Bool .
+  op usuarioPossuiLivro : Sistema Nat Nat -> Bool .
 
   --- 6. Variaveis
   vars L U ID : Nat .
@@ -56,32 +58,49 @@ fmod BIBLIOTECA is
   var CU : ConjuntoUsuarios .
   var CE : ConjuntoEmprestimos .
 
-  --- 7. Equacoes das Acoes
-  eq addLivro(sistema(CL, CU, CE), L, T) = sistema(livro(L, T, disponivel) CL, CU, CE) .
-  eq addUsuario(sistema(CL, CU, CE), U, T) = sistema(CL, usuario(U, T) CU, CE) .
+  --- 7. Equacoes de Checagem e Predicados (Com Owise para Conjuntos AC)
+  eq pertenceAcervo(livro(L, T, E) CL, L) = true .
+  eq pertenceAcervo(CL, L) = false [owise] .
 
-  --- Emprestimo valido
+  eq existeUsuario(usuario(U, T) CU, U) = true .
+  eq existeUsuario(CU, U) = false [owise] .
+
+  eq estaDisponivel(livro(L, T, disponivel) CL, L) = true .
+  eq estaDisponivel(CL, L) = false [owise] .
+
+  eq estaEmprestado(emprestimo(L, U) CE, L, U) = true .
+  eq estaEmprestado(CE, L, U) = false [owise] .
+
+  eq usuarioPossuiLivro(sistema(CL, CU, CE), L, U) = estaEmprestado(CE, L, U) .
+
+  --- 8. Equacoes das Acoes Validas e Invalidas
+  ceq addLivro(sistema(CL, CU, CE), L, T) 
+    = sistema(livro(L, T, disponivel) CL, CU, CE) 
+    if pertenceAcervo(CL, L) == false .
+  ceq addLivro(sistema(CL, CU, CE), L, T) 
+    = sistema(CL, CU, CE) 
+    if pertenceAcervo(CL, L) == true .
+
+  ceq addUsuario(sistema(CL, CU, CE), U, T) 
+    = sistema(CL, usuario(U, T) CU, CE) 
+    if existeUsuario(CU, U) == false .
+  ceq addUsuario(sistema(CL, CU, CE), U, T) 
+    = sistema(CL, CU, CE) 
+    if existeUsuario(CU, U) == true .
+
   eq emprestar(sistema(livro(L, T, disponivel) CL, usuario(U, T2) CU, CE), L, U) 
    = sistema(livro(L, T, emprestado) CL, usuario(U, T2) CU, emprestimo(L, U) CE) .
+  eq emprestar(sistema(CL, CU, CE), L, U) = sistema(CL, CU, CE) [owise] .
 
-  --- Devolucao valida
   eq devolver(sistema(livro(L, T, emprestado) CL, CU, emprestimo(L, U) CE), L, U) 
    = sistema(livro(L, T, disponivel) CL, CU, CE) .
+  eq devolver(sistema(CL, CU, CE), L, U) = sistema(CL, CU, CE) [owise] .
 
-  --- Remocao valida (somente livro disponivel)
   eq removerLivro(sistema(livro(L, T, disponivel) CL, CU, CE), L) 
    = sistema(CL, CU, CE) .
+  eq removerLivro(sistema(CL, CU, CE), L) = sistema(CL, CU, CE) [owise] .
 
-  --- 8. Equacoes de Checagem e Consultas
-  eq pertenceAcervo(nenhumLivro, L) = false .
-  eq pertenceAcervo(livro(L, T, E) CL, L) = true .
-
-  eq estaDisponivel(nenhumLivro, L) = false .
-  eq estaDisponivel(livro(L, T, disponivel) CL, L) = true .
-
-  eq estaEmprestado(nenhumEmprestimo, L, U) = false .
-  eq estaEmprestado(emprestimo(L, U) CE, L, U) = true .
-
+  --- 9. Equacoes das Consultas
   eq contarLivros(nenhumLivro) = 0 .
   eq contarLivros(livro(ID, T, E) CL) = 1 + contarLivros(CL) .
 
