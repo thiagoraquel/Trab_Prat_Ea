@@ -4,15 +4,15 @@ fmod BIBLIOTECA is
   protecting BOOL .
 
   --- 1. Sorts
-  sorts Livro Usuario EstadoLivro .
-  sorts ConjuntoLivros ConjuntoUsuarios Emprestimo ConjuntoEmprestimos Sistema .
+  sorts Livro Usuario EstadoLivro Emprestimo .
+  sorts ConjuntoLivros ConjuntoUsuarios ConjuntoEmprestimos Sistema .
 
   --- 2. Construtores Basicos
   ops disponivel emprestado : -> EstadoLivro [ctor] .
   op livro : Nat String EstadoLivro -> Livro [ctor] .
   op usuario : Nat String -> Usuario [ctor] .
 
-  --- 3. Construtores de Colecoes
+  --- 3. Construtores de Colecoes (Monoides Abelianos com Elemento Neutro)
   op nenhumLivro : -> ConjuntoLivros [ctor] .
   op nenhumUsuario : -> ConjuntoUsuarios [ctor] .
   op nenhumEmprestimo : -> ConjuntoEmprestimos [ctor] .
@@ -32,8 +32,17 @@ fmod BIBLIOTECA is
   op addLivro : Sistema Nat String -> Sistema .
   op addUsuario : Sistema Nat String -> Sistema .
   op emprestar : Sistema Nat Nat -> Sistema .
-  op devolver : Sistema Nat Nat -> Sistema .
+  op devolver : Sistema Nat Nat -> Sistema . 
   op removerLivro : Sistema Nat -> Sistema .
+
+  *** =========================================================================
+  *** [SUGESTAO DE FEATURE A - REMOVER USUARIO]
+  *** - Objetivo: Permitir excluir um usuario caso ele nao tenha pendencias.
+  *** - Regra de Negocio: So pode ser removido se nao tiver emprestimo ativo.
+  *** - Assinatura proposta:
+  ***   op removerUsuario : Sistema Nat -> Sistema .
+  *** =========================================================================
+
 
   --- 5. Declaracao de Operadores de Consulta e Predicados
   op totalLivros : Sistema -> Nat .
@@ -44,11 +53,37 @@ fmod BIBLIOTECA is
   op contarEmprestimos : ConjuntoEmprestimos -> Nat .
   op contarDisponiveis : ConjuntoLivros -> Nat .
 
+  *** =========================================================================
+  *** [DISCUSSAO 1 - BUSCA POR TITULO ALEM DO ID]
+  *** - Situacao atual: pertenceAcervo(ConjuntoLivros, Nat) busca apenas por ID.
+  *** - Ideia: Permitir buscar tambem pelo titulo (String) usando sobrecarga.
+  *** - Assinatura adicional sugerida:
+  ***   op pertenceAcervo : ConjuntoLivros String -> Bool .
+  *** =========================================================================
   op pertenceAcervo : ConjuntoLivros Nat -> Bool .
+
   op existeUsuario : ConjuntoUsuarios Nat -> Bool .
   op estaDisponivel : ConjuntoLivros Nat -> Bool .
+
+  *** =========================================================================
+  *** [DISCUSSAO 2 - CONSULTA DE STATUS DE EMPRESTIMO]
+  *** - Situacao atual: estaEmprestado(ConjuntoEmprestimos, IdLivro, IdUsuario)
+  *** - Ponderacao: Para saber apenas "o livro X esta emprestado?", saber o ID 
+  ***   do usuario e superfluo. Bastaria casar o Id do Livro em ConjuntoEmprestimos.
+  *** - Assinatura alternativa:
+  ***   op estaEmprestado : ConjuntoEmprestimos Nat -> Bool .
+  *** =========================================================================
   op estaEmprestado : ConjuntoEmprestimos Nat Nat -> Bool .
+
   op usuarioPossuiLivro : Sistema Nat Nat -> Bool .
+
+  *** =========================================================================
+  *** [SUGESTAO DE FEATURE B - CHECAGEM DE EMPRESTIMO ATIVO]
+  *** - Objetivo: Funcao auxiliar para validar se um usuario possui qualquer livro.
+  *** - Assinatura proposta:
+  ***   op usuarioPossuiEmprestimo : Sistema Nat -> Bool .
+  *** =========================================================================
+
 
   --- 6. Variaveis
   vars L U ID : Nat .
@@ -58,9 +93,16 @@ fmod BIBLIOTECA is
   var CU : ConjuntoUsuarios .
   var CE : ConjuntoEmprestimos .
 
-  --- 7. Equacoes de Checagem e Predicados (Com Owise para Conjuntos AC)
+
+  --- 7. Equacoes de Checagem e Predicados (Casamento de Padrao AC + Fallbacks)
+
+  *** Equacao para busca de livro por ID (atual):
   eq pertenceAcervo(livro(L, T, E) CL, L) = true .
   eq pertenceAcervo(CL, L) = false [owise] .
+
+  *** [Rascunho se adotarmos a busca por Titulo (Discussao 1)]:
+  *** eq pertenceAcervo(livro(L, T, E) CL, T) = true .
+  *** eq pertenceAcervo(CL, T) = false [owise] .
 
   eq existeUsuario(usuario(U, T) CU, U) = true .
   eq existeUsuario(CU, U) = false [owise] .
@@ -68,18 +110,38 @@ fmod BIBLIOTECA is
   eq estaDisponivel(livro(L, T, disponivel) CL, L) = true .
   eq estaDisponivel(CL, L) = false [owise] .
 
+  *** Checagem se livro esta emprestado (atual):
   eq estaEmprestado(emprestimo(L, U) CE, L, U) = true .
   eq estaEmprestado(CE, L, U) = false [owise] .
 
+  *** [Rascunho se simplificarmos a checagem por Id do Livro (Discussao 2)]:
+  *** eq estaEmprestado(emprestimo(L, U) CE, L) = true .
+  *** eq estaEmprestado(CE, L) = false [owise] .
+
   eq usuarioPossuiLivro(sistema(CL, CU, CE), L, U) = estaEmprestado(CE, L, U) .
 
+  *** [Rascunho da Feature B - checagem de emprestimo ativo por usuario]:
+  *** Se encontrar qualquer par (L, U) com aquele usuario, retorna true:
+  --- eq usuarioPossuiEmprestimo(sistema(CL, CU, emprestimo(L, U) CE), U) = true .
+  --- eq usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) = false [owise] .
+
+
   --- 8. Equacoes das Acoes Validas e Invalidas
+
   ceq addLivro(sistema(CL, CU, CE), L, T) 
     = sistema(livro(L, T, disponivel) CL, CU, CE) 
     if pertenceAcervo(CL, L) == false .
   ceq addLivro(sistema(CL, CU, CE), L, T) 
     = sistema(CL, CU, CE) 
     if pertenceAcervo(CL, L) == true .
+
+  *** [Rascunho alternativo se adotarmos busca por ID ou Titulo duplicado]:
+  *** ceq addLivro(sistema(CL, CU, CE), L, T) 
+  ***   = sistema(livro(L, T, disponivel) CL, CU, CE) 
+  ***   if (pertenceAcervo(CL, L) == false) and (pertenceAcervo(CL, T) == false) .
+  *** ceq addLivro(sistema(CL, CU, CE), L, T) 
+  ***   = sistema(CL, CU, CE) 
+  ***   if (pertenceAcervo(CL, L) == true) or (pertenceAcervo(CL, T) == true) .
 
   ceq addUsuario(sistema(CL, CU, CE), U, T) 
     = sistema(CL, usuario(U, T) CU, CE) 
@@ -99,6 +161,14 @@ fmod BIBLIOTECA is
   eq removerLivro(sistema(livro(L, T, disponivel) CL, CU, CE), L) 
    = sistema(CL, CU, CE) .
   eq removerLivro(sistema(CL, CU, CE), L) = sistema(CL, CU, CE) [owise] .
+
+  *** [Rascunho da Feature A - Remocao Segura de Usuario]:
+  *** So remove usuario(U, T2) se ele nao tiver pendencias em emprestimos:
+  --- ceq removerUsuario(sistema(CL, usuario(U, T2) CU, CE), U) 
+  ---   = sistema(CL, CU, CE)
+  ---   if usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) == false .
+  --- eq removerUsuario(sistema(CL, CU, CE), U) = sistema(CL, CU, CE) [owise] .
+
 
   --- 9. Equacoes das Consultas
   eq contarLivros(nenhumLivro) = 0 .
