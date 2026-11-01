@@ -56,14 +56,9 @@ fmod BIBLIOTECA is
   op existeUsuario : ConjuntoUsuarios Nat -> Bool .
   op estaDisponivel : ConjuntoLivros Nat -> Bool .
 
-  *** =========================================================================
-  *** [DISCUSSAO 2 - CONSULTA DE STATUS DE EMPRESTIMO]
-  *** - Situacao atual: estaEmprestado(ConjuntoEmprestimos, IdLivro, IdUsuario)
-  *** - Ponderacao: Para saber apenas "o livro X esta emprestado?", saber o ID 
-  ***   do usuario e superfluo. Bastaria casar o Id do Livro em ConjuntoEmprestimos.
-  *** - Assinatura alternativa:
-  ***   op estaEmprestado : ConjuntoEmprestimos Nat -> Bool .
-  *** =========================================================================
+  --- Sobrecarga do operador estaEmprestado para verificar se um 
+  --- livro está emprestado utilizando apenas o seu ID.
+  op estaEmprestado : ConjuntoEmprestimos Nat -> Bool .
   op estaEmprestado : ConjuntoEmprestimos Nat Nat -> Bool .
 
   op usuarioPossuiLivro : Sistema Nat Nat -> Bool .
@@ -101,9 +96,9 @@ fmod BIBLIOTECA is
   eq estaEmprestado(emprestimo(L, U) CE, L, U) = true .
   eq estaEmprestado(CE, L, U) = false [owise] .
 
-  *** [Rascunho se simplificarmos a checagem por Id do Livro (Discussao 2)]:
-  *** eq estaEmprestado(emprestimo(L, U) CE, L) = true .
-  *** eq estaEmprestado(CE, L) = false [owise] .
+  --- Implementação da verificação simplificada por ID do Livro (Discussão 2)
+  eq estaEmprestado(emprestimo(L, U) CE, L) = true .
+  eq estaEmprestado(CE, L) = false [owise] .
 
   eq usuarioPossuiLivro(sistema(CL, CU, CE), L, U) = estaEmprestado(CE, L, U) .
 
@@ -120,14 +115,6 @@ fmod BIBLIOTECA is
   ceq addLivro(sistema(CL, CU, CE), L, T) 
     = sistema(CL, CU, CE) 
     if pertenceAcervo(CL, L) == true .
-
-  *** [Rascunho alternativo se adotarmos busca por ID ou Titulo duplicado]:
-  *** ceq addLivro(sistema(CL, CU, CE), L, T) 
-  ***   = sistema(livro(L, T, disponivel) CL, CU, CE) 
-  ***   if (pertenceAcervo(CL, L) == false) and (pertenceAcervo(CL, T) == false) .
-  *** ceq addLivro(sistema(CL, CU, CE), L, T) 
-  ***   = sistema(CL, CU, CE) 
-  ***   if (pertenceAcervo(CL, L) == true) or (pertenceAcervo(CL, T) == true) .
 
   ceq addUsuario(sistema(CL, CU, CE), U, T) 
     = sistema(CL, usuario(U, T) CU, CE) 
