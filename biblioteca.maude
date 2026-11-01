@@ -77,12 +77,8 @@ fmod BIBLIOTECA is
 
   op usuarioPossuiLivro : Sistema Nat Nat -> Bool .
 
-  *** =========================================================================
-  *** [SUGESTAO DE FEATURE B - CHECAGEM DE EMPRESTIMO ATIVO]
-  *** - Objetivo: Funcao auxiliar para validar se um usuario possui qualquer livro.
-  *** - Assinatura proposta:
-  ***   op usuarioPossuiEmprestimo : Sistema Nat -> Bool .
-  *** =========================================================================
+  --- Auxiliar necessária para a Feature A (validar se o usuário possui empréstimos ativos)
+  op usuarioPossuiEmprestimo : Sistema Nat -> Bool .
 
 
   --- 6. Variaveis
@@ -120,10 +116,9 @@ fmod BIBLIOTECA is
 
   eq usuarioPossuiLivro(sistema(CL, CU, CE), L, U) = estaEmprestado(CE, L, U) .
 
-  *** [Rascunho da Feature B - checagem de emprestimo ativo por usuario]:
-  *** Se encontrar qualquer par (L, U) com aquele usuario, retorna true:
-  --- eq usuarioPossuiEmprestimo(sistema(CL, CU, emprestimo(L, U) CE), U) = true .
-  --- eq usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) = false [owise] .
+  --- Implementação da verificação de empréstimo ativo por usuário (aproveitando AC)
+  eq usuarioPossuiEmprestimo(sistema(CL, CU, emprestimo(L, U) CE), U) = true .
+  eq usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) = false [owise] .
 
 
   --- 8. Equacoes das Acoes Validas e Invalidas
