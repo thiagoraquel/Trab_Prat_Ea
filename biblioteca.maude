@@ -34,14 +34,9 @@ fmod BIBLIOTECA is
   op emprestar : Sistema Nat Nat -> Sistema .
   op devolver : Sistema Nat Nat -> Sistema . 
   op removerLivro : Sistema Nat -> Sistema .
-
-  *** =========================================================================
-  *** [SUGESTAO DE FEATURE A - REMOVER USUARIO]
-  *** - Objetivo: Permitir excluir um usuario caso ele nao tenha pendencias.
-  *** - Regra de Negocio: So pode ser removido se nao tiver emprestimo ativo.
-  *** - Assinatura proposta:
-  ***   op removerUsuario : Sistema Nat -> Sistema .
-  *** =========================================================================
+  
+  --- Feature A: Operação de remoção segura de usuário
+  op removerUsuario : Sistema Nat -> Sistema .
 
 
   --- 5. Declaracao de Operadores de Consulta e Predicados
@@ -157,12 +152,12 @@ fmod BIBLIOTECA is
    = sistema(CL, CU, CE) .
   eq removerLivro(sistema(CL, CU, CE), L) = sistema(CL, CU, CE) [owise] .
 
-  *** [Rascunho da Feature A - Remocao Segura de Usuario]:
-  *** So remove usuario(U, T2) se ele nao tiver pendencias em emprestimos:
-  --- ceq removerUsuario(sistema(CL, usuario(U, T2) CU, CE), U) 
-  ---   = sistema(CL, CU, CE)
-  ---   if usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) == false .
-  --- eq removerUsuario(sistema(CL, CU, CE), U) = sistema(CL, CU, CE) [owise] .
+  --- Implementação da Feature A: Remoção Segura de Usuário
+  --- Só remove se o usuário não possuir nenhum empréstimo ativo (retorna false na checagem)
+  ceq removerUsuario(sistema(CL, usuario(U, T2) CU, CE), U) 
+    = sistema(CL, CU, CE)
+    if usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) == false .
+  eq removerUsuario(sistema(CL, CU, CE), U) = sistema(CL, CU, CE) [owise] .
 
 
   --- 9. Equacoes das Consultas
