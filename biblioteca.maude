@@ -48,14 +48,10 @@ fmod BIBLIOTECA is
   op contarEmprestimos : ConjuntoEmprestimos -> Nat .
   op contarDisponiveis : ConjuntoLivros -> Nat .
 
-  *** =========================================================================
-  *** [DISCUSSAO 1 - BUSCA POR TITULO ALEM DO ID]
-  *** - Situacao atual: pertenceAcervo(ConjuntoLivros, Nat) busca apenas por ID.
-  *** - Ideia: Permitir buscar tambem pelo titulo (String) usando sobrecarga.
-  *** - Assinatura adicional sugerida:
-  ***   op pertenceAcervo : ConjuntoLivros String -> Bool .
-  *** =========================================================================
   op pertenceAcervo : ConjuntoLivros Nat -> Bool .
+  --- Sobrecarga do operador pertenceAcervo para permitir consultas 
+  --- de livros no acervo utilizando diretamente o título (String) além do ID.
+  op pertenceAcervo : ConjuntoLivros String -> Bool .
 
   op existeUsuario : ConjuntoUsuarios Nat -> Bool .
   op estaDisponivel : ConjuntoLivros Nat -> Bool .
@@ -91,9 +87,9 @@ fmod BIBLIOTECA is
   eq pertenceAcervo(livro(L, T, E) CL, L) = true .
   eq pertenceAcervo(CL, L) = false [owise] .
 
-  *** [Rascunho se adotarmos a busca por Titulo (Discussao 1)]:
-  *** eq pertenceAcervo(livro(L, T, E) CL, T) = true .
-  *** eq pertenceAcervo(CL, T) = false [owise] .
+  *** Implementação das equações de busca por Título (Discussão 1)
+  eq pertenceAcervo(livro(L, T, E) CL, T) = true .
+  eq pertenceAcervo(CL, T) = false [owise] .
 
   eq existeUsuario(usuario(U, T) CU, U) = true .
   eq existeUsuario(CU, U) = false [owise] .
