@@ -1,0 +1,40 @@
+*** =========================================================================
+*** AUTOMACAO DA SUITE DE TESTES DA BIBLIOTECA MAUDE
+*** Execute com: maude biblioteca.maude testes.maude
+*** =========================================================================
+
+load biblioteca.maude
+
+fmod TESTES-BIBLIOTECA is
+  protecting BIBLIOTECA .
+endfm
+
+--- 1. Testes Básicos de Adição
+red addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "O Alquimista") .
+red addUsuario(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 10, "Thiago") .
+
+--- 2. Operações de Empréstimo e Devolução
+red emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10) .
+red devolver(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 1, 10) .
+
+--- 3. Consultas e Métricas
+red totalLivros(addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Livro A"), 2, "Livro B")) .
+red totalDisponiveis(emprestar(addUsuario(addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Livro A"), 2, "Livro B"), 10, "Thiago"), 1, 10)) .
+
+--- 4. Casos Inválidos e Fallbacks [owise]
+red emprestar(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 1, 10) .
+red addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Primeiro Titulo"), 1, "Titulo Duplicado") .
+
+--- 5. Relações e Remoções de Livros
+red usuarioPossuiLivro(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 1, 10) .
+red removerLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Livro Descartavel"), 1) .
+
+--- 6. Remoção Segura de Usuário
+red removerUsuario(addUsuario(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 10, "Thiago"), 10) .
+red removerUsuario(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 10) .
+
+--- 7. Sobrecarga de Consultas
+red pertenceAcervo(livro(1, "Dom Casmurro", disponivel), "Dom Casmurro") .
+red pertenceAcervo(livro(1, "Dom Casmurro", disponivel) livro(2, "Memórias Póstumas", disponivel), "Dom Casmurro") .
+red estaEmprestado(emprestimo(1, 10), 1) .
+red addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 2, "Dom Casmurro") .
