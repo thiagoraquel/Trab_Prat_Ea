@@ -29,22 +29,12 @@ red addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, 
 red usuarioPossuiLivro(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 1, 10) .
 red removerLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Livro Descartavel"), 1) .
 
---- 6. Novas Features: Remoção Segura de Usuário (Feature A)
---- Teste 11: Remoção bem-sucedida (Usuário sem empréstimo)
+--- 6. Remoção Segura de Usuário
 red removerUsuario(addUsuario(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 10, "Thiago"), 10) .
-
---- Teste 12: Bloqueio de remoção (Usuário com empréstimo ativo)
 red removerUsuario(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 10) .
 
---- 7. Novas Features: Sobrecargas de Consulta (Discussão 1 e 2)
---- Teste 13: Pertinência por Título (String)
+--- 7. Sobrecarga de Consultas
 red pertenceAcervo(livro(1, "Dom Casmurro", disponivel), "Dom Casmurro") .
-
---- Testes 14: Pertinência por Título (String) com conjunto maior de livros.
 red pertenceAcervo(livro(1, "Dom Casmurro", disponivel) livro(2, "Memórias Póstumas", disponivel), "Dom Casmurro") .
-
---- Teste 15: Checagem Simplificada de Empréstimo por ID do Livro (Nat)
 red estaEmprestado(emprestimo(1, 10), 1) .
-
---- Teste 16: Cadastro de múltiplos exemplares com o mesmo título e IDs diferentes
 red addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 2, "Dom Casmurro") .

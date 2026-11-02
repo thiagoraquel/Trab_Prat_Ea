@@ -34,10 +34,7 @@ fmod BIBLIOTECA is
   op emprestar : Sistema Nat Nat -> Sistema .
   op devolver : Sistema Nat Nat -> Sistema . 
   op removerLivro : Sistema Nat -> Sistema .
-  
-  --- Feature A: Operação de remoção segura de usuário
   op removerUsuario : Sistema Nat -> Sistema .
-
 
   --- 5. Declaracao de Operadores de Consulta e Predicados
   op totalLivros : Sistema -> Nat .
@@ -49,23 +46,16 @@ fmod BIBLIOTECA is
   op contarDisponiveis : ConjuntoLivros -> Nat .
 
   op pertenceAcervo : ConjuntoLivros Nat -> Bool .
-  --- Sobrecarga do operador pertenceAcervo para permitir consultas 
-  --- de livros no acervo utilizando diretamente o título (String) além do ID.
   op pertenceAcervo : ConjuntoLivros String -> Bool .
 
   op existeUsuario : ConjuntoUsuarios Nat -> Bool .
   op estaDisponivel : ConjuntoLivros Nat -> Bool .
 
-  --- Sobrecarga do operador estaEmprestado para verificar se um 
-  --- livro está emprestado utilizando apenas o seu ID.
   op estaEmprestado : ConjuntoEmprestimos Nat -> Bool .
   op estaEmprestado : ConjuntoEmprestimos Nat Nat -> Bool .
 
   op usuarioPossuiLivro : Sistema Nat Nat -> Bool .
-
-  --- Auxiliar necessária para a Feature A (validar se o usuário possui empréstimos ativos)
   op usuarioPossuiEmprestimo : Sistema Nat -> Bool .
-
 
   --- 6. Variaveis
   vars L U ID : Nat .
@@ -75,14 +65,10 @@ fmod BIBLIOTECA is
   var CU : ConjuntoUsuarios .
   var CE : ConjuntoEmprestimos .
 
-
   --- 7. Equacoes de Checagem e Predicados (Casamento de Padrao AC + Fallbacks)
-
-  *** Equacao para busca de livro por ID (atual):
   eq pertenceAcervo(livro(L, T, E) CL, L) = true .
   eq pertenceAcervo(CL, L) = false [owise] .
 
-  *** Implementação das equações de busca por Título (Discussão 1)
   eq pertenceAcervo(livro(L, T, E) CL, T) = true .
   eq pertenceAcervo(CL, T) = false [owise] .
 
@@ -92,23 +78,19 @@ fmod BIBLIOTECA is
   eq estaDisponivel(livro(L, T, disponivel) CL, L) = true .
   eq estaDisponivel(CL, L) = false [owise] .
 
-  *** Checagem se livro esta emprestado (atual):
   eq estaEmprestado(emprestimo(L, U) CE, L, U) = true .
   eq estaEmprestado(CE, L, U) = false [owise] .
 
-  --- Implementação da verificação simplificada por ID do Livro (Discussão 2)
   eq estaEmprestado(emprestimo(L, U) CE, L) = true .
   eq estaEmprestado(CE, L) = false [owise] .
 
   eq usuarioPossuiLivro(sistema(CL, CU, CE), L, U) = estaEmprestado(CE, L, U) .
 
-  --- Implementação da verificação de empréstimo ativo por usuário (aproveitando AC)
   eq usuarioPossuiEmprestimo(sistema(CL, CU, emprestimo(L, U) CE), U) = true .
   eq usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) = false [owise] .
 
 
   --- 8. Equacoes das Acoes Validas e Invalidas
-
   ceq addLivro(sistema(CL, CU, CE), L, T) 
     = sistema(livro(L, T, disponivel) CL, CU, CE) 
     if pertenceAcervo(CL, L) == false .
@@ -135,13 +117,10 @@ fmod BIBLIOTECA is
    = sistema(CL, CU, CE) .
   eq removerLivro(sistema(CL, CU, CE), L) = sistema(CL, CU, CE) [owise] .
 
-  --- Implementação da Feature A: Remoção Segura de Usuário
-  --- Só remove se o usuário não possuir nenhum empréstimo ativo (retorna false na checagem)
   ceq removerUsuario(sistema(CL, usuario(U, T2) CU, CE), U) 
     = sistema(CL, CU, CE)
     if usuarioPossuiEmprestimo(sistema(CL, CU, CE), U) == false .
   eq removerUsuario(sistema(CL, CU, CE), U) = sistema(CL, CU, CE) [owise] .
-
 
   --- 9. Equacoes das Consultas
   eq contarLivros(nenhumLivro) = 0 .
@@ -157,5 +136,4 @@ fmod BIBLIOTECA is
   eq totalLivros(sistema(CL, CU, CE)) = contarLivros(CL) .
   eq totalEmprestados(sistema(CL, CU, CE)) = contarEmprestimos(CE) .
   eq totalDisponiveis(sistema(CL, CU, CE)) = contarDisponiveis(CL) .
-
 endfm
