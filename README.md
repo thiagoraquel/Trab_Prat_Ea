@@ -59,3 +59,38 @@ O objetivo principal da especificação é garantir a integridade das operaçõe
     *   `totalLivros`: retorna a quantidade total de livros cadastrados.
     *   `totalEmprestados`: retorna a quantidade total de empréstimos em aberto.
     *   `totalDisponiveis`: contabiliza apenas os livros que possuem status `disponivel`.
+
+---
+
+## Comandos Interativos no Interpretador Maude
+
+Para executar reduções de forma interativa dentro do ambiente do Maude, utilize os seguintes comandos:
+
+```maude
+--- Carrega o módulo funcional da biblioteca no ambiente interativo
+load biblioteca.maude .
+
+--- Insere um novo livro com ID 1 e título "Dom Casmurro" com status disponivel
+red addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro") .
+
+--- Adiciona um novo usuário com ID 10 e nome "Thiago" à base do sistema
+red addUsuario(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 10, "Thiago") .
+
+--- Associa o livro 1 ao usuário 10, atualizando o livro para emprestado e criando o registro
+red emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10) .
+
+--- Restaura o estado do livro 1 para disponivel e remove o registro de empréstimo ativo
+red devolver(emprestar(addUsuario(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Dom Casmurro"), 10, "Thiago"), 1, 10), 1, 10) .
+
+--- Retorna a quantidade total de livros atualmente cadastrados no acervo
+red totalLivros(addLivro(addLivro(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 1, "Livro A"), 2, "Livro B")) .
+
+--- Verifica via sobrecarga por String se o título especificado existe no acervo
+red pertenceAcervo(livro(1, "Dom Casmurro", disponivel), "Dom Casmurro") .
+
+--- Checa via sobrecarga por Nat se o livro informado consta em algum empréstimo ativo
+red estaEmprestado(emprestimo(1, 10), 1) .
+
+--- Exclui o usuário da base cadastral após validar a ausência de empréstimos em aberto
+red removerUsuario(addUsuario(sistema(nenhumLivro, nenhumUsuario, nenhumEmprestimo), 10, "Thiago"), 10) .
+```
